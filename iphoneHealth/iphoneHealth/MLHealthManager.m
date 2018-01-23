@@ -31,10 +31,9 @@
     
     // 1.判断设备是否支持HealthKit框架
     if ([HKHealthStore isHealthDataAvailable]) {
-        
         getData = [self getData];
-        
-    } else {
+    }
+    else {
         NSLog(@"---------不支持 HealthKit 框架");
     }
     
@@ -44,7 +43,6 @@
     [store requestAuthorizationToShareTypes:nil readTypes:getData completion:^(BOOL success, NSError * _Nullable error) {
         if (!success) {
             NSLog(@"--------请求苹果健康认证失败");
-
             return ;
         }
         
@@ -54,7 +52,6 @@
             [self getHealthStepData];
             [self getHealthDistanceData];
         });
-        
     }];
 }
 
@@ -68,19 +65,13 @@
 
 
 - (void)updateStep{
-   
     NSCalendar *calendar = [NSCalendar currentCalendar];
-    
     NSDate *now = [NSDate date];
-    
     NSDateComponents *components = [calendar components:NSCalendarUnitYear|NSCalendarUnitMonth|NSCalendarUnitDay fromDate:now];
-    
     NSDate *startDate = [calendar dateFromComponents:components];
-    
     NSDate *endDate = [calendar dateByAddingUnit:NSCalendarUnitDay value:1 toDate:startDate options:0];
     
     HKQuantityType *sampleType = [HKQuantityType quantityTypeForIdentifier:HKQuantityTypeIdentifierStepCount];
-    
     NSPredicate *predicate = [HKQuery predicateForSamplesWithStartDate:startDate endDate:endDate options:HKQueryOptionStrictStartDate];
     
     HKStatisticsQuery *query = [[HKStatisticsQuery alloc] initWithQuantityType:sampleType quantitySamplePredicate:predicate options:HKStatisticsOptionCumulativeSum completionHandler:^(HKStatisticsQuery *query, HKStatistics *result, NSError *error) {
@@ -96,23 +87,16 @@
     }];
     
     [store executeQuery:query];
-    
 }
 
 - (void)updateDistance{
-    
     NSCalendar *calendar = [NSCalendar currentCalendar];
-    
     NSDate *now = [NSDate date];
-    
     NSDateComponents *components = [calendar components:NSCalendarUnitYear|NSCalendarUnitMonth|NSCalendarUnitDay fromDate:now];
-    
     NSDate *startDate = [calendar dateFromComponents:components];
-    
     NSDate *endDate = [calendar dateByAddingUnit:NSCalendarUnitDay value:1 toDate:startDate options:0];
     
     HKQuantityType *sampleType = [HKQuantityType quantityTypeForIdentifier:HKQuantityTypeIdentifierDistanceWalkingRunning];
-    
     NSPredicate *predicate = [HKQuery predicateForSamplesWithStartDate:startDate endDate:endDate options:HKQueryOptionStrictStartDate];
     
     HKStatisticsQuery *query = [[HKStatisticsQuery alloc] initWithQuantityType:sampleType quantitySamplePredicate:predicate options:HKStatisticsOptionCumulativeSum completionHandler:^(HKStatisticsQuery *query, HKStatistics *result, NSError *error) {
@@ -131,19 +115,13 @@
 }
 
 - (void)updateEnergy{
-    
     NSCalendar *calendar = [NSCalendar currentCalendar];
-    
     NSDate *now = [NSDate date];
-    
     NSDateComponents *components = [calendar components:NSCalendarUnitYear|NSCalendarUnitMonth|NSCalendarUnitDay fromDate:now];
-    
     NSDate *startDate = [calendar dateFromComponents:components];
-    
     NSDate *endDate = [calendar dateByAddingUnit:NSCalendarUnitDay value:1 toDate:startDate options:0];
     
     HKQuantityType *sampleType = [HKQuantityType quantityTypeForIdentifier:HKQuantityTypeIdentifierDietaryEnergyConsumed];
-    
     NSPredicate *predicate = [HKQuery predicateForSamplesWithStartDate:startDate endDate:endDate options:HKQueryOptionStrictStartDate];
     
     HKStatisticsQuery *query = [[HKStatisticsQuery alloc] initWithQuantityType:sampleType quantitySamplePredicate:predicate options:HKStatisticsOptionCumulativeSum completionHandler:^(HKStatisticsQuery *query, HKStatistics *result, NSError *error) {
@@ -163,7 +141,6 @@
 
 - (void)getHealthStepData{
     HKHealthStore *healthStore = [[HKHealthStore alloc]init];
-    
     NSCalendar *calendar = [NSCalendar currentCalendar];
     
     // 设置时间支持单位
@@ -172,7 +149,6 @@
      NSCalendarUnitYear | NSCalendarUnitWeekday fromDate:[NSDate date]];
     
     NSDate *anchorDate = [calendar dateFromComponents:anchorComponents];
-
     // 获取数据的截止时间 今天
     NSDate *endDate = [NSDate date];
     // 获取数据的起始时间 此处取从今日往前推100天的数据
@@ -180,17 +156,13 @@
     
     // 数据类型
     HKQuantityType *type = [HKObjectType quantityTypeForIdentifier:HKQuantityTypeIdentifierStepCount];
-    
     // Your interval: sum by hour
     NSDateComponents *intervalComponents = [[NSDateComponents alloc] init];
     intervalComponents.day = 1;
-    
     // Example predicate 用于获取设置时间段内的数据
     NSPredicate *predicate = [HKQuery predicateForSamplesWithStartDate:startDate endDate:endDate options:HKQueryOptionStrictStartDate];
     
-    
     HKStatisticsCollectionQuery *query = [[HKStatisticsCollectionQuery alloc] initWithQuantityType:type quantitySamplePredicate:predicate options:HKStatisticsOptionCumulativeSum anchorDate:anchorDate intervalComponents:intervalComponents];
-    
     
     query.initialResultsHandler = ^(HKStatisticsCollectionQuery *query, HKStatisticsCollection *result, NSError *error) {
         
@@ -206,7 +178,6 @@
             
             double editStep  = 0.0;
             for (HKSource *source in sample.sources) {
-                
                 if ([source.bundleIdentifier isEqualToString:appleHealth]) {
                     // 获取用户自己添加的数据 并减去，防止用户手动刷数据
                     HKSource *healthSource = source;
@@ -215,7 +186,6 @@
             }
             
             NSInteger step = (NSInteger)totalStep - (NSInteger)editStep;
-            
             NSString *value = [NSString stringWithFormat:@"%ld",step];
             
             NSDictionary *dic = [NSDictionary dictionaryWithObjectsAndKeys:
@@ -244,7 +214,6 @@
     [calendar components:NSCalendarUnitDay | NSCalendarUnitMonth |
      NSCalendarUnitYear | NSCalendarUnitWeekday fromDate:[NSDate date]];
     NSDate *anchorDate = [calendar dateFromComponents:anchorComponents];
-    
     NSDate *endDate = [NSDate date];
     NSDate *startDate = [NSDate dateWithTimeIntervalSinceNow:-100*24*60*60];
     
@@ -280,7 +249,6 @@
             }
             
             double distance = totalDistance/1000 - editDistance/1000;
-            
             NSString *value = [NSString stringWithFormat:@"%f",distance];
             
             NSDictionary *dic = [NSDictionary dictionaryWithObjectsAndKeys:
